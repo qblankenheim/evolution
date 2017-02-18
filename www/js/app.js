@@ -1,24 +1,76 @@
-// Ionic Starter App
+var gameHeight = 640;
+var gameWidth  = 480;
 
-// angular.module is a global place for creating, registering and retrieving Angular modules
-// 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
-// the 2nd parameter is an array of 'requires'
-angular.module('starter', ['ionic'])
+var states = {
+    game: "game",
+};
 
-.run(function($ionicPlatform) {
-  $ionicPlatform.ready(function() {
-    if(window.cordova && window.cordova.plugins.Keyboard) {
-      // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-      // for form inputs)
-      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+var gameState = function(game){
 
-      // Don't remove this line unless you know what you are doing. It stops the viewport
-      // from snapping when text inputs are focused. Ionic handles this internally for
-      // a much nicer keyboard experience.
-      cordova.plugins.Keyboard.disableScroll(true);
+};
+
+var hexagons = new Array();
+var active = new Array();
+var check = 0;
+gameState.prototype = {
+
+    preload: function () {
+      game.load.image('tile','img/hexagon.svg');
+      game.load.image('earth','img/hexagon_earth.svg');
+    },
+
+    create: function () {
+      var hexWidth= 696;
+      var hexHeight = 800;
+      var numWide = 6;
+      // Desired Tile Width
+      var tileWidth = Math.trunc(gameWidth / (numWide*3/2));
+      var tileHeight = tileWidth  / hexWidth * hexHeight;
+      var numHigh = Math.trunc(gameHeight / tileHeight);
+
+      for(i = 0; i < numWide; i++){
+        for(j = 0; j < numHigh; j++){
+          tile = game.add.sprite(1.5*i*tileWidth,j*tileHeight,'tile');
+          tile.height = tileHeight;
+          tile.width = tileWidth;
+          tile.inputEnabled = true;
+          tile.events.onInputDown.add(clickHandler, this);
+          var nextTile = {tile:tile, x:i, y:j};
+          hexagons.push(nextTile);
+        }
+      }
+      for(i = 0; i < numWide-1; i++){
+        for(j = 0; j < numHigh-1; j++){
+          tile = game.add.sprite((1.5*i+0.75)*tileWidth,(j+0.5)*tileHeight,'tile');
+          tile.height = tileHeight;
+          tile.width = tileWidth;
+          tile.inputEnabled = true;
+          tile.events.onInputDown.add(clickHandler, this);
+          var nextTile = {tile:tile, x:i, y:j};
+          hexagons.push(nextTile);
+         }
+      }
+    },
+
+    update: function () {
+
+    },
+};
+
+function clickHandler(tile, pointer) {
+    if (pointer.leftButton.isDown) {
+      if(tile.key == 'tile'){
+        tile.loadTexture('earth');
+        active.push(tile);
+      }
+      else{
+        tile.loadTexture('tile');
+      }
     }
-    if(window.StatusBar) {
-      StatusBar.styleDefault();
-    }
-  });
-})
+}
+
+var game = new Phaser.Game(gameWidth,gameHeight, Phaser.AUTO, 'gameDiv');
+game.state.add(states.game, gameState);
+game.state.start(states.game);
+
+
